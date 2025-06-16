@@ -1,0 +1,26 @@
+<!-- templates/profile.html -->
+{% extends "dashboard.html" %}
+
+{% block title %}Profile-{% endblock %}
+
+{% block content %}
+        <div class="search-container text-center text-white py-5">
+            <h3 class="mb-4">What are you looking for?</h3>
+            <form class="search-form d-flex justify-content-center flex-wrap gap-2">
+                <select class="form-select w-auto" name="category">
+                    <option selected>All Categories</option>
+                    <option value="phones">Phones & Tablets</option>
+                    <option value="fashion">Fashion</option>
+                    <option value="books">Education</option>
+                    <option value="electronics">Electronics</option>
+                </select>
+                <div class="search-box d-flex">
+                    <input type="text" class="form-control" placeholder="help me find..." name="query" />
+                    <button type="submit" class="btn search-icon">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+{% endblock %}
