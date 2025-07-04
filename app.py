@@ -302,5 +302,5 @@ def reset_password(token):
 
 
 if __name__ == '__main__':
-    db.
+    db.create_all()
     app.run(host='0.0.0.0', port=5000, debug=True)
