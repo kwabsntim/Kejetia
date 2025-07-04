@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from flask_sqlalchemy import SQLAlchemy
 from argon2 import PasswordHasher, exceptions
-
+from datetime import datetime
 db = SQLAlchemy()
 ph = PasswordHasher()
 
@@ -56,3 +56,13 @@ class PasswordResetToken(db.Model):
 
     def is_valid(self):
         return not self.is_used and datetime.utcnow() < self.expires_at
+class Item(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))  
+    category = db.Column(db.String(80), nullable=False)
+    location = db.Column(db.String(120), nullable=False)
+    photo_filename = db.Column(db.String(255))
+    video_filename = db.Column(db.String(255), nullable=False)
+    date_posted = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user = db.relationship('User', backref='items')  # 👈 Allows item.user and user.items

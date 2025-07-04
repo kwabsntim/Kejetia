@@ -1,0 +1,18 @@
+{% extends "dashboard.html" %}
+
+{% block content %}
+    {% for item in items %}
+    <div class="card mb-3">
+        <video controls src="{{ url_for('static', filename='uploads/videos/' ~ item.video_filename) }}"
+            width="100%"></video>
+        <div class="card-body">
+            <h5 class="card-title">{{ item.category }}</h5>
+            <p class="card-text">{{ item.location }}</p>
+            {% if item.photo_filename %}
+            <img src="{{ url_for('static', filename='uploads/photos/' ~ item.photo_filename) }}" width="100">
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+
+{% endblock %}

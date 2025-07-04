@@ -14,12 +14,20 @@ from models import db, User, PasswordResetToken
 from forms import LoginForm, RegistrationForm, ForgotPasswordForm, ResetPasswordForm
 from werkzeug.security import generate_password_hash, check_password_hash
 import email_validator
+from werkzeug.utils import secure_filename
 from flask_mail import Mail, Message
+from flask_wtf.csrf import generate_csrf
+from models import db, User, PasswordResetToken, Item
+ 
+
+
+
 load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///instance/users.db'
+
 
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI')
 
@@ -84,7 +92,7 @@ def home():
 
 
 @app.route('/login', methods=['GET', 'POST'])
-@limiter.limit("5/minute")
+#@limiter.limit("5/minute")
 def login():
     form = LoginForm()
     if form.validate_on_submit():
@@ -167,11 +175,55 @@ def profile():
 
 @app.route('/dashboard/search')
 def search():
-    return render_template('dashboard/search.html')
+    category=request.args.get('category')
+    query=request.args.get('query')
+    return render_template('dashboard/search.html',query=query,category=category)
 
-@app.route('/dashboard/sell')
+@app.route('/dashboard/products')
+def products():
+    if 'user_id' not in session:
+        flash('Please login', 'danger')
+        return redirect(url_for('login'))
+
+    user = User.query.get(session['user_id'])
+    items = Item.query.all()
+    return render_template('dashboard/products.html', user=user, items=items)
+@app.route('/dashboard/sell', methods=['GET', 'POST'])
 def sell():
-    return render_template('sell.html')
+    if request.method == 'POST':
+        category = request.form.get('category')
+        location = request.form.get('location')
+        video = request.files.get('video')
+        photo = request.files.get('photo')
+
+        # Ensure video is provided
+        if not video:
+            flash('Video is required!', 'danger')
+            return redirect(url_for('sell'))
+
+        # Secure filenames
+        video_filename = secure_filename(video.filename)
+        photo_filename = secure_filename(photo.filename) if photo else None
+
+        # Ensure upload folders exist
+        os.makedirs('static/uploads/videos', exist_ok=True)
+        os.makedirs('static/uploads/photos', exist_ok=True)
+
+        # Save files
+        video.save(os.path.join('static/uploads/videos', video_filename))
+        if photo:
+            photo.save(os.path.join('static/uploads/photos', photo_filename))
+
+        # You can also save to the database here if needed
+
+        flash('Ad posted successfully!', 'success')
+        return redirect(url_for('products'))  # or wherever you want to send user
+
+    csrf_token = generate_csrf()
+    return render_template("dashboard/sell.html", user_id=session.get("user_id"), csrf_token=csrf_token)
+
+
+
 
 @app.route('/dashboard/saved')
 def saved():
