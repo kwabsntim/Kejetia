@@ -187,6 +187,7 @@ def products():
 
     user = User.query.get(session['user_id'])
     items = Item.query.all()
+    app.logger.info(f'Items:{items}')
     return render_template('dashboard/products.html', user=user, items=items)
 @app.route('/dashboard/sell', methods=['GET', 'POST'])
 def sell():
@@ -301,4 +302,5 @@ def reset_password(token):
 
 
 if __name__ == '__main__':
+    db.
     app.run(host='0.0.0.0', port=5000, debug=True)
