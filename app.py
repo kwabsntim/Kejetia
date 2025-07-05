@@ -26,7 +26,7 @@ load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///instance/users.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///instance/yourdatabase.db'
 
 
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI')
@@ -111,7 +111,7 @@ def login():
             user.update_last_login()
             db.session.commit()  # Added
             flash('Login successful!', 'success')
-            return redirect(url_for('dashboard'))
+            return redirect(url_for('products'))
         else:
             if user:
                 user.increment_failed_login()
@@ -215,10 +215,20 @@ def sell():
         if photo:
             photo.save(os.path.join('static/uploads/photos', photo_filename))
 
-        # You can also save to the database here if needed
+        # Save to the database
+        new_item = Item(
+            category=category,
+            location=location,
+            video_filename=video_filename,
+            photo_filename=photo_filename,
+            user_id=session.get('user_id')  # Associate with the logged-in user
+        )
+        db.session.add(new_item)
+        db.session.commit()
 
+        app.logger.info(f"New item added: {new_item}")
         flash('Ad posted successfully!', 'success')
-        return redirect(url_for('products'))  # or wherever you want to send user
+        return redirect(url_for('products'))
 
     csrf_token = generate_csrf()
     return render_template("dashboard/sell.html", user_id=session.get("user_id"), csrf_token=csrf_token)
@@ -302,5 +312,6 @@ def reset_password(token):
 
 
 if __name__ == '__main__':
-    db.create_all()
+    with app.app_context():
+        db.create_all()
     app.run(host='0.0.0.0', port=5000, debug=True)
